@@ -2,7 +2,7 @@ name: CICD
 
 on:
   push:
-    branches: mynod1
+    branches: master
 
 jobs:
   build:
