@@ -9,33 +9,12 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        working-directory: /home/bitnami/API
-
-    strategy:
-      matrix:
-        node-version: [18.x]
+        working-directory: /home/bitnami/AnotherPath  # Change this to your desired path
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout Repository to Another Path
       uses: actions/checkout@v3
       with:
         ref: 'master'
-        path: "/home/bitnami/API"
-    - run: |
-        TIMESTAMP=$(date '+%Y_%m_%d_%H:%M:%S')
-        BACKUP_DIR="/home/bitnami/backupAPI/backupmsterV2_$TIMESTAMP"
-        mkdir -p $BACKUP_DIR
-        cp -r . $BACKUP_DIR || true
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: pm2 delete masterV2 || true
-    - run: mkdir uploads
-    - run: mkdir temp
-    - run: npm ci
-    - run: |
-        touch .env
-        echo "${{ secrets.ENV_FILE_V2 }}" > .env
-    - run: pm2 start index.js --name=masterV2
+        path: "/home/bitnami/AnotherPath"  # Change this to your desired path
+    # ... other steps in your workflow ...
