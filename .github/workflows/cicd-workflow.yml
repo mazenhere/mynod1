@@ -3,22 +3,27 @@ name: Node.js CI/CD Lightsail
 on:
   push:
     branches: [ "master" ]
+  
 
 jobs:
   build:
+
     runs-on: self-hosted
 
     strategy:
       matrix:
         node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Move Repository to /home/bitnami/API
-        run: |
-          mkdir -p /home/bitnami/API
-          mv $GITHUB_WORKSPACE/* /home/bitnami/API/
-
-      # The rest of your workflow steps go here...
+    - uses: actions/checkout@v3
+    - run: |
+        TIMESTAMP=$(date '+%Y_%m_%d_%H:%M:%S')
+        BACKUP_DIR="/home/bitnami/backupAPI/backupDev_$TIMESTAMP"
+        mkdir -p $BACKUP_DIR
+        cp -r . $BACKUP_DIR || true
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
