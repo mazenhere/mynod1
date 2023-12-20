@@ -2,16 +2,42 @@ name: Node.js CI/CD Lightsail
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: self-hosted
 
+    strategy:
+      matrix:
+        node-version: [18.x]
+
     steps:
-    - name: Checkout Master Branch to Another Path
-      uses: actions/checkout@v3
-      with:
-        ref: 'master'  # Specify the branch you want to checkout
-        path: "/home/bitnami/API"  # Specify the desired path
-    # ... other steps in your workflow ...
+      - name: Move Repository to /home/bitnami/API
+        run: |
+          mkdir -p /home/bitnami/API
+          mv $GITHUB_WORKSPACE/* /home/bitnami/API
+
+      - uses: actions/checkout@v3
+
+      - run: |
+          TIMESTAMP=$(date '+%Y_%m_%d_%H:%M:%S')
+          BACKUP_DIR="/home/bitnami/backupAPI/backupDev_$TIMESTAMP"
+          mkdir -p $BACKUP_DIR
+          cp -r /home/bitnami/API/* $BACKUP_DIR || true
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: pm2 delete Dev || true
+      - run: mkdir /home/bitnami/API/uploads
+      - run: mkdir /home/bitnami/API/temp
+      - run: npm ci
+      - run: |
+          touch /home/bitnami/API/.env
+          echo "${{ secrets.ENV_File }}" > /home/bitnami/API/.env
+
+      - run: pm2 start /home/bitnami/API/index.js --name=Dev
